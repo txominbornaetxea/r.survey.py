@@ -6,7 +6,7 @@
 # AUTHOR(S): Ivan Marchesini
 # PURPOSE:   Define solid angle, 3d distance and view angles area 
 # from multiple survey locations (points). Survey points can be at any elevation
-# above ground level. 3d points, representing drone/aerial positions, are allowed
+# above ground level. Also points, representing drone/aerial positions, are allowed
 # Outputs are:
 # maximum solid angle each pixel is visible from survey points
 # maximum view angle each pixel is visible from survey points
@@ -29,7 +29,7 @@
 #%end
 #%option G_OPT_V_INPUT
 #% key: points
-#% description: Name of the input points map  (representing the survey location)
+#% description: Name of the input points map  (representing the survey location). It can not be a 3D vector layer.
 #% required: yes
 #%end
 #%option G_OPT_R_INPUT
@@ -310,7 +310,7 @@ def compute(pnt, dem, obs_heigh, maxdist, hcurv, downward, oradius, i, nprocs, o
                 Module("r.viewshed", input=dem, output="zzview"+i, coordinates=coords.split(), memory=memory, observer_elevation=obs_heigh, max_distance=maxdist, flags="c", overwrite=True, quiet=True)
             else:
                 Module("r.viewshed", input=dem, output="zzview"+i, coordinates=coords.split(), memory=memory, observer_elevation=obs_heigh, max_distance=maxdist, overwrite=True, quiet=True)
-        #Since r.viewshed set the cell of the output visibility layer to 180 under the point, this cell is set to 0.01 (DOUBLE CHECK THIS PART)
+        #Since r.viewshed set the cell of the output visibility layer to 180 under the point, this cell is set to 0.01 
         Module("r.mapcalc",expression="zzview{I} = if(zzview{I}==180,0,zzview{I})".format(I=i), overwrite=True, quiet=True)
         #estimating the layer of the horizontal angle between point and each visible cell (angle of the horizontal line of sight)         
         Module("r.mapcalc", expression="{A} = \
@@ -352,7 +352,7 @@ def compute(pnt, dem, obs_heigh, maxdist, hcurv, downward, oradius, i, nprocs, o
         #calculating solid angle considering that the area of an asimetric ellipse is equal to the one of an ellipse having the minor axis equal to the sum of the tqo unequal half minor axes 
         Module("r.mapcalc", expression="zzsangle{I} = ({pi}*{r}*( {d}*tan(zzB1_{I}) + {d}*tan(zzB2_{I}) )/2 )  / (pow({r},2)+pow({d},2)) ".format(r=circle_radius,d="zzdistance"+str(i),I=i,pi=pi), overwrite=True, quiet=True) 
         #approximations for calculating solid angle can create too much larger values under or very close the position of the oserver. in such a case we assume that the solid angle is half of the visible sphere (2*pi)
-        #The same occur when it is used an object_radius that is larger than thepixel size. In some cases ths can produce negative values of zzB2 whit the effect of creating negative values 
+        #The same occur when it is used an object_radius that is larger than the pixel size. In some cases this can produce negative values of zzB2 with the effect of creating negative values 
         Module("r.mapcalc", expression="zzsangle{I} = if(zzsangle{I}>2*{pi} || zzB2_{I}>=90,2*{pi},zzsangle{I})".format(I=i, pi=pi), overwrite=True, quiet=True)
         #removing temporary region    
         gscript.del_temp_region()
