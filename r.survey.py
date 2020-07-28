@@ -29,7 +29,7 @@
 #%end
 #%option G_OPT_V_INPUT
 #% key: points
-#% description: Name of the input points map  (representing the survey location)
+#% description: Name of the input points map  (representing the survey location). It can not be 3D vector layer. 
 #% required: yes
 #%end
 #%option G_OPT_R_INPUT
